@@ -1,0 +1,16 @@
+[package]
+name = "lngterm"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.98"
+chrono = "0.4.41"
+libc = "0.2"
+rustyline = "17.0.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+
+[build-dependencies]
+cc = "1.0"
+
