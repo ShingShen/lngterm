@@ -89,6 +89,15 @@ log_2025-08-08_00-15-17.txt
 
 ---
 
+## ⚠️ Platform Support
+This project is currently only supported on Linux.
+
+- ❌ Windows: Not supported
+- ❌ macOS: Not supported
+- ✅ Linux: Fully supported
+
+---
+
 ## 📄 License
 
 MIT License. See [LICENSE](./LICENSE) for details.
