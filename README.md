@@ -33,7 +33,7 @@ cargo build --release
 ### Run in CLI Mode
 
 ```bash
-./lngterm
+sudo ./lngterm
 ```
 
 - Type `?` to see available commands.
