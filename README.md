@@ -21,7 +21,7 @@ A lightweight serial terminal and task runner tool. Supports serial communicatio
 - Clone the repository and build manually:
 
 ```bash
-git clone https://github.com/yourusername/lngterm.git
+git clone https://github.com/ShingShen/lngterm.git
 cd lngterm
 cargo build --release
 ```
@@ -61,7 +61,7 @@ You can extend this by editing the dispatch logic in `main.rs`.
 
 ## Tasker YAML Format
 
-The `tasker` feature allows you to automate command sequences via a YAML file. The YAML file should contain the device path, baudrate, and a list of commands to execute sequentially.
+The `tasker` feature allows you to automate command sequences via a YAML file. The YAML file should contain a list of commands to execute sequentially.
 
 ### Example `task.yml`
 
@@ -73,7 +73,7 @@ commands:
   - "ls"
 ```
 
-The output will be logged to a file with a timestamp in the filename to avoid overwriting existing logs.
+The output will be logged to a file with a timestamp in the filename.
 
 
 ## 🕓 Logging
@@ -84,7 +84,7 @@ The output will be logged to a file with a timestamp in the filename to avoid ov
 Example log filename:
 
 ```
-log_2025-08-08_00-15-17.txt
+output_2025-08-08_00-15-17.log
 ```
 
 ---
