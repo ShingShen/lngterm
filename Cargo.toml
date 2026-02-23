@@ -6,10 +6,14 @@ edition = "2024"
 [dependencies]
 anyhow = "1.0.98"
 chrono = "0.4.41"
+clap = { version = "4.4", features = ["derive"] } 
+crossterm = "0.27"
 libc = "0.2"
+mio = { version = "0.8", features = ["os-poll", "os-ext"] }
 rustyline = "17.0.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9"
+serialport = "4.2"
 
 [build-dependencies]
 cc = "1.0"
