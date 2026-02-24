@@ -240,6 +240,7 @@
 // }
 // Pure Rust using userspace tools //
 
+// //
 mod reactor;
 
 use std::io::{self, Write};
@@ -288,72 +289,6 @@ fn main() -> Result<()> {
         ResetColor
     )?;
 
-    // let keep_running = Arc::new(AtomicBool::new(true));
-    // let keep_running_clone = keep_running.clone();
-    // let mut poll = match Poll::new() {
-    //     Ok(p) => p,
-    //     Err(_) => return Ok(()),
-    // };
-    // let mut events = Events::with_capacity(128);
-
-    // const SERIAL_TOKEN: Token = Token(0);
-    // const WAKER_TOKEN: Token = Token(1);
-
-    // let waker = match Waker::new(poll.registry(), WAKER_TOKEN) {
-    //     Ok(w) => Arc::new(w),
-    //     Err(_) => return Ok(()),
-    // };
-
-    // let raw_fd = port_reader.as_raw_fd();
-    
-    // if poll.registry().register(&mut SourceFd(&raw_fd), SERIAL_TOKEN, Interest::READABLE).is_err() {
-    //     return Ok(());
-    // }
-
-    // let reader_thread = thread::spawn(move || {
-    //     let mut serial_buf = [0u8; 1024];
-    //     // let mut serial_buf = [0u8; 16];
-    //     let mut stdout = io::stdout();
-
-    //     while keep_running_clone.load(Ordering::Relaxed) {
-    //         match poll.poll(&mut events, None) {
-    //             Ok(_) => {}
-    //             Err(ref e) if e.kind() == io::ErrorKind::Interrupted => {
-    //                 continue;
-    //             }
-    //             Err(e) => {
-    //                 eprintln!("\r\n[Reader Thread] epoll failed: {:?}", e);
-    //                 break;
-    //             }
-    //         }
-
-    //         for event in events.iter() {
-    //             match event.token() {
-    //                 SERIAL_TOKEN => {
-    //                     if event.is_readable() {
-    //                         match port_reader.read(&mut serial_buf) {
-    //                             Ok(t) if t > 0 => {
-    //                                 let _ = stdout.write_all(&serial_buf[..t]);
-    //                                 let _ = stdout.flush();
-    //                             }
-    //                             Ok(_) => {},
-    //                             Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => continue,
-    //                             Err(e) => {
-    //                                 eprintln!("\r\n[Reader Thread] read failed: {:?}", e);
-    //                                 break;
-    //                             }
-    //                         }
-    //                     }
-    //                 },
-    //                 WAKER_TOKEN => {
-    //                     continue; 
-    //                 },
-    //                 _ => unreachable!(),
-    //             }
-    //         }
-    //     }
-    // });
-
     loop {
         if event::poll(Duration::from_millis(100))? {
             if let Event::Key(key) = event::read()? {
@@ -373,12 +308,9 @@ fn main() -> Result<()> {
         }
     }
 
-    // keep_running.store(false, Ordering::Relaxed);
-    // let _ = waker.wake();
-    // let _ = reader_thread.join();
-
     reactor.stop();
     disable_raw_mode()?;
     println!("Disconnected.");
     Ok(())
 }
+// //
