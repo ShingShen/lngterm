@@ -1,3 +1,4 @@
+// Linux Only //
 fn main() {
     cc::Build::new()
     .files([
@@ -6,3 +7,4 @@ fn main() {
     .include("native")
     .compile("serialterm");
 }
+// Linux Only //
