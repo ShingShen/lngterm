@@ -63,15 +63,45 @@ See `src/reactor.rs` for the epoll reactor implementation.
 
 ## 📊 Performance Comparison
 
-Benchmarked on Linux with virtual serial (`socat` pty pair). Startup = time to first "Connected" output. Memory = RSS while idle.
+Benchmarked on Linux with a virtual serial link (`socat` pty pair). Startup time is measured from process start until the first \"Connected\" line appears on stdout.
 
 | Metric | lngterm (Rust) | pyterm (Python) |
 |--------|----------------|-----------------|
 | Binary / deploy size | 1.36 MB (single binary) | 1.6 KB script + 682 KB pyserial + Python 3 runtime |
-| Startup time | ~0.01 s | ~0.19 s |
-| Memory (RSS, idle) | ~2.7 MB | ~13 MB |
+| Startup time (approx.) | ~0.01 s | ~0.19 s |
+| Memory (RSS, idle, manual test) | ~2.7 MB | ~13 MB |
 
-Run `./bench.sh` (requires `socat`, `script`) to reproduce.
+The memory numbers were measured separately using `ps` on real runs (not via `bench.sh`), and are meant as rough guidance only.
+
+### Running Benchmarks
+
+`bench.sh` compares lngterm and pyterm using a virtual serial pair, and prints 5 startup-time runs for each implementation.
+
+#### 1. Install dependencies
+
+| Tool | Purpose | Install |
+|------|---------|---------|
+| `socat` | Create virtual serial pair (pty) | `sudo apt install socat` (Debian/Ubuntu) |
+| `script` | Provide pseudo-TTY for memory test | `sudo apt install bsdutils` (Debian/Ubuntu) |
+| Python 3 | Run pyterm | `sudo apt install python3` |
+| pyserial | pyterm serial I/O | `pip install pyserial` or `pip3 install pyserial` |
+
+On Fedora/RHEL: `sudo dnf install socat util-linux python3 && pip3 install pyserial`
+
+#### 2. Build lngterm and pyterm
+
+```bash
+cargo build --release          # lngterm binary → target/release/lngterm
+pip install pyserial           # pyterm dependency
+```
+
+#### 3. Run
+
+```bash
+./bench.sh
+```
+
+Script runs in project root and expects `target/release/lngterm` and `pyterm/pyterm.py`.
 
 ---
 
