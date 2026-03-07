@@ -61,25 +61,37 @@ fn main() -> Result<()> {
         // Poll for terminal events every 100ms
         if event::poll(Duration::from_millis(100))? {
             if let Event::Key(key) = event::read()? {
+                if key.code == KeyCode::Char('q') && key.modifiers.contains(KeyModifiers::CONTROL) {
+                    break;
+                }
+
                 match key.code {
-                    // Exit the application on Ctrl+Q
-                    KeyCode::Char('q') if key.modifiers.contains(KeyModifiers::CONTROL) => break,
+                    KeyCode::Up => port.write_all(b"\x1b[A")?,
+                    KeyCode::Down => port.write_all(b"\x1b[B")?,
+                    KeyCode::Right => port.write_all(b"\x1b[C")?,
+                    KeyCode::Left => port.write_all(b"\x1b[D")?,
+                    KeyCode::Home => port.write_all(b"\x1b[H")?, 
+                    KeyCode::End => port.write_all(b"\x1b[F")?,
+                    KeyCode::PageUp => port.write_all(b"\x1b[5~")?,
+                    KeyCode::PageDown => port.write_all(b"\x1b[6~")?,
+                    KeyCode::Insert => port.write_all(b"\x1b[2~")?,
+                    KeyCode::Delete => port.write_all(b"\x1b[3~")?,
+                    
+                    KeyCode::Backspace => port.write_all(&[0x08])?,
+                    KeyCode::Enter => port.write_all(b"\r")?,
+                    KeyCode::Tab => port.write_all(b"\t")?,
+                    KeyCode::Esc => port.write_all(b"\x1b")?,
 
-                    // Forward Enter key as carriage return (\r)
-                    KeyCode::Enter => { port.write_all(b"\r")?; }
+                    KeyCode::Char(c) if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        let ctrl_byte = c as u8 & 0x1f;
+                        port.write_all(&[ctrl_byte])?;
+                    }
 
-                    // Handle standard character input
                     KeyCode::Char(c) => {
                         let mut buf = [0u8; 4];
                         let bytes = c.encode_utf8(&mut buf);
                         port.write_all(bytes.as_bytes())?;
                     }
-
-                    // Forward Backspace (0x08)
-                    KeyCode::Backspace => { port.write_all(&[0x08])?; }
-
-                    // Forward Escape (0x1b)
-                    KeyCode::Esc => { port.write_all(&[0x1b])?; }
 
                     _ => {}
                 }
