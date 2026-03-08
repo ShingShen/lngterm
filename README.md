@@ -34,6 +34,9 @@ Binary: `target/release/lngterm`
 
 ```bash
 # Connect to serial port
+./lngterm -d /dev/ttyUSB0 -b 115200 --parity even --stop-bits 2
+
+# Or just input
 ./lngterm -d /dev/ttyUSB0 -b 115200
 ```
 
@@ -43,6 +46,10 @@ Options:
 |--------|-------------|
 | `-d, --device` | Serial device path (required) |
 | `-b, --baud`   | Baud rate (default: 115200) |
+| `--data-bits` | Data bits (5, 6, 7, **8**) |
+| `--parity` | Parity checking (**none**, odd, even) |
+| `--stop-bits` | Stop bits (**1**, 2) |
+| `--flow-control` | Flow control (**none**, software, hardware) |
 
 ---
 

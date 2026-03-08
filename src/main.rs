@@ -4,7 +4,7 @@ use std::io::{self, Write};
 use std::time::Duration;
 
 use anyhow::{Context, Result};
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode},
@@ -12,6 +12,75 @@ use crossterm::{
     style::{Print, ResetColor, SetForegroundColor, Color},
 };
 use reactor::SerialReactor;
+use serialport::{DataBits, FlowControl, Parity, StopBits};
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
+enum CliDataBits {
+    #[value(name = "5")] Five,
+    #[value(name = "6")] Six,
+    #[value(name = "7")] Seven,
+    #[value(name = "8")] Eight,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
+enum CliParity {
+    None,
+    Odd,
+    Even,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
+enum CliStopBits {
+    #[value(name = "1")] One,
+    #[value(name = "2")] Two,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
+enum CliFlowControl {
+    None,
+    Software,
+    Hardware,
+}
+
+impl From<CliDataBits> for DataBits {
+    fn from(v: CliDataBits) -> Self {
+        match v {
+            CliDataBits::Five => DataBits::Five,
+            CliDataBits::Six => DataBits::Six,
+            CliDataBits::Seven => DataBits::Seven,
+            CliDataBits::Eight => DataBits::Eight,
+        }
+    }
+}
+
+impl From<CliParity> for Parity {
+    fn from(v: CliParity) -> Self {
+        match v {
+            CliParity::None => Parity::None,
+            CliParity::Odd => Parity::Odd,
+            CliParity::Even => Parity::Even,
+        }
+    }
+}
+
+impl From<CliStopBits> for StopBits {
+    fn from(v: CliStopBits) -> Self {
+        match v {
+            CliStopBits::One => StopBits::One,
+            CliStopBits::Two => StopBits::Two,
+        }
+    }
+}
+
+impl From<CliFlowControl> for FlowControl {
+    fn from(v: CliFlowControl) -> Self {
+        match v {
+            CliFlowControl::None => FlowControl::None,
+            CliFlowControl::Software => FlowControl::Software,
+            CliFlowControl::Hardware => FlowControl::Hardware,
+        }
+    }
+}
 
 /// Command line arguments for lngterm
 #[derive(Parser, Debug)]
@@ -20,9 +89,26 @@ struct Args {
     /// Path to the serial device (e.g., /dev/ttyUSB0)
     #[arg(short, long)]
     device: String,
+
     /// Baud rate for the serial connection
     #[arg(short, long, default_value_t = 115200)]
     baud: u32,
+
+    /// Data bits (5, 6, 7, 8)
+    #[arg(long, value_enum, default_value_t = CliDataBits::Eight)]
+    data_bits: CliDataBits,
+
+    /// Parity checking
+    #[arg(long, value_enum, default_value_t = CliParity::None)]
+    parity: CliParity,
+
+    /// Stop bits (1, 2)
+    #[arg(long, value_enum, default_value_t = CliStopBits::One)]
+    stop_bits: CliStopBits,
+
+    /// Flow control
+    #[arg(long, value_enum, default_value_t = CliFlowControl::None)]
+    flow_control: CliFlowControl,
 }
 
 fn main() -> Result<()> {
@@ -32,18 +118,22 @@ fn main() -> Result<()> {
 
     // Initialize the serial port with a zero timeout for non-blocking behavior
     let mut port = serialport::new(&args.device, args.baud)
-        .timeout(Duration::from_millis(0)) 
-        .open_native()
-        .with_context(|| format!("Failed to open serial port natively: {}", args.device))?;
+    .data_bits(args.data_bits.into()) 
+    .parity(args.parity.into())
+    .stop_bits(args.stop_bits.into())
+    .flow_control(args.flow_control.into())
+    .timeout(Duration::from_millis(0))
+    .open_native()
+    .with_context(|| format!("Failed to open serial port: {}", args.device))?;
 
     // Clone the port handle for the background reader thread (reactor)
     let port_reader = port.try_clone_native().context("Failed to duplicate native TTYPort")?;
-
+    
+    // Enable raw mode to capture individual key presses without waiting for Enter
+    enable_raw_mode().context("Failed to enable raw mode")?;
+    
     // Start the asynchronous reactor to handle incoming serial data
     let mut reactor = SerialReactor::start(port_reader).context("Failed to start epoll reactor")?;
-
-    // Enable raw mode to capture individual key presses without waiting for Enter
-    enable_raw_mode()?;
     let mut stdout = io::stdout();
 
     // Print connection status message with styling
